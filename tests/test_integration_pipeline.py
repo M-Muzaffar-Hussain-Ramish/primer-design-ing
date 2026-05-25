@@ -7,7 +7,7 @@ from primer_designer.pipeline_runner import PipelineOptions, run_pipeline
 
 
 def write_blast_cache(cache_dir: Path, sequence: str):
-    cfg = BlastConfig(program="blastn", database="nt", identity_threshold=95.0, coverage_threshold=80.0, max_hits=100, e_value_cutoff=1e-10, use_cache=True, cache_only=True)
+    cfg = BlastConfig(program="blastn", database="nt", identity_threshold=95.0, coverage_threshold=70.0, max_hits=20, e_value_cutoff=1e-10, use_cache=True, cache_only=True)
     qh = _query_hash(sequence, cfg)
     path = cache_dir / f"{qh}.json"
     sample = {

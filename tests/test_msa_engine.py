@@ -25,20 +25,17 @@ def test_load_alignment_from_cache(tmp_path):
     assert 'CLUSTAL' in mat.full_alignment_text
 
 
-def test_missing_aligner_raises(tmp_path):
-    seqs = ["ATGC", "ATGC"]
+def test_biopython_fallback_when_no_external_aligner(tmp_path):
+    """When no external aligner (clustalo/clustalw) is on PATH, BioPython star-alignment is used."""
+    seqs = ["ATGCGTACGT", "ATGCGTACGT"]
     cfg = MSAConfig(use_cache=False, aligner='clustalo')
-    # ensure no clustalo/clustalw in PATH by using a temp PATH
     import os
     old_path = os.environ.get('PATH')
     os.environ['PATH'] = ''
     try:
-        raised = False
-        try:
-            align_sequences(seqs, config=cfg, cache_dir=str(tmp_path))
-        except RuntimeError as e:
-            raised = True
-            assert 'No global MSA' in str(e)
-        assert raised
+        mat = align_sequences(seqs, config=cfg, cache_dir=str(tmp_path))
+        assert mat.num_sequences == 2
+        assert mat.alignment_length > 0
+        assert "BioPython" in mat.full_alignment_text
     finally:
         os.environ['PATH'] = old_path

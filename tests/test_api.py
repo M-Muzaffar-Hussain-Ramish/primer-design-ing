@@ -145,7 +145,7 @@ def test_candidates():
 # ---------------------------------------------------------------------------
 
 def _write_blast_cache(cache_dir: Path, sequence: str):
-    cfg = BlastConfig(use_cache=True, cache_only=True)
+    cfg = BlastConfig(use_cache=True, cache_only=True, identity_threshold=95.0, coverage_threshold=70.0, max_hits=20)
     qh = _query_hash(sequence, cfg)
     path = cache_dir / f"{qh}.json"
     payload = {

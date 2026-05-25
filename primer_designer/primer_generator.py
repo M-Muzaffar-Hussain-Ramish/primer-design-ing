@@ -115,6 +115,39 @@ def validate_candidate(seq: str, length_min: int = 18, length_max: int = 25, gc_
     return is_accepted, reasons
 
 
+def generate_reverse_candidates_from_region(region_seq: str, length_min: int = 18, length_max: int = 25) -> List[PrimerCandidate]:
+    """Generate reverse primer candidates as reverse-complements of 3'-end subsequences.
+
+    The reverse primer binds the antisense strand, so we take subsequences from the
+    3' portion of the conserved region and reverse-complement them.
+    """
+    candidates: List[PrimerCandidate] = []
+    cid = 1
+    for L in range(length_min, length_max + 1):
+        for start in range(0, len(region_seq) - L + 1):
+            subseq = region_seq[start:start + L]
+            rc_seq = _revcomp(subseq)
+            tp = thermo_profile(rc_seq)
+            is_ok, reasons = validate_candidate(rc_seq, length_min, length_max)
+            pc = PrimerCandidate(
+                candidate_id=f"R-{cid:04d}",
+                direction="REVERSE",
+                sequence=rc_seq,
+                length=L,
+                gc_content=tp.gc_percent,
+                tm_basic=tp.tm_basic,
+                tm_advanced=tp.tm_advanced,
+                gc_clamp=_gc_clamp(rc_seq),
+                repeat_detected=_has_homopolymer(rc_seq)[0] or _has_dinuc_repeat(rc_seq)[0],
+                repeat_sequence=_has_homopolymer(rc_seq)[1] or _has_dinuc_repeat(rc_seq)[1],
+                is_accepted=is_ok,
+                rejection_reasons=reasons,
+            )
+            candidates.append(pc)
+            cid += 1
+    return candidates
+
+
 def generate_candidates_from_region(region_seq: str, length_min: int = 18, length_max: int = 25) -> List[PrimerCandidate]:
     candidates: List[PrimerCandidate] = []
     cid = 1
