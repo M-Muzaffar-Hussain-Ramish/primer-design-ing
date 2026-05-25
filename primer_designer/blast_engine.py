@@ -12,6 +12,11 @@ except ImportError:
     logger = _logging.getLogger(__name__)
 
 
+def _default_verify_ssl() -> bool:
+    """Read NCBI_VERIFY_SSL env var; set to '0' for corporate/self-signed TLS proxies."""
+    return os.environ.get("NCBI_VERIFY_SSL", "1") != "0"
+
+
 @dataclass
 class BlastConfig:
     database: str = "nt"
@@ -23,7 +28,7 @@ class BlastConfig:
     entrez_query: str = ""
     use_cache: bool = True
     cache_only: bool = False
-    verify_ssl: bool = True
+    verify_ssl: bool = True  # overridden at runtime by NCBI_VERIFY_SSL=0 env var
 
 
 @dataclass
@@ -56,7 +61,11 @@ def _ensure_cache_dir(cache_dir: str):
 def _query_hash(query: str, config: BlastConfig) -> str:
     m = hashlib.sha256()
     m.update(query.encode("utf-8"))
-    m.update(json.dumps(asdict(config), sort_keys=True).encode("utf-8"))
+    # Exclude runtime-only fields (verify_ssl, cache_only, use_cache) that don't
+    # affect the actual BLAST results so caches remain valid across SSL-mode changes.
+    hash_fields = {k: v for k, v in asdict(config).items()
+                   if k not in ("verify_ssl", "use_cache", "cache_only")}
+    m.update(json.dumps(hash_fields, sort_keys=True).encode("utf-8"))
     return m.hexdigest()
 
 
@@ -117,6 +126,11 @@ def run_blast(query: str, config: BlastConfig = None, cache_dir: str = "cache") 
     """
     if config is None:
         config = BlastConfig()
+
+    # Allow env var to override verify_ssl (useful for corporate TLS proxies)
+    from dataclasses import replace as _replace
+    if not _default_verify_ssl():
+        config = _replace(config, verify_ssl=False)
 
     _ensure_cache_dir(cache_dir)
     qh = _query_hash(query, config)
