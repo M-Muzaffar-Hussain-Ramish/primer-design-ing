@@ -23,3 +23,15 @@ pytest -q
 ```bash
 python -m primer_designer.cli "ATGCGTACGTTAGCCTAGCT..."
 ```
+
+4. Run the Streamlit UI:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+5. If you prefer the app folder path:
+
+```bash
+streamlit run app/streamlit_app.py
+```
