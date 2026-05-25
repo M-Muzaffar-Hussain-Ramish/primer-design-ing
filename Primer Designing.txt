@@ -1,0 +1,19 @@
+Primer Designing:
+
+Step #1: Go to NBI genbank Nucelotide and select gene or the sequence for which You want to design thew primer. (5'-3' always)
+
+Step#2: copy the Fasta Sequence and run Blastn for the sequence you will find the sequences that have similarities, select approxx 5-10 sequences with the similarity of atleast 95% with(5'-3' always) 
+
+Step # 3: Download all the matching sequncces in the fasta format and go the tool called clustalW this tool use for multiple sequnce alignement.
+
+Step#4: After the MSA result select the conserve regions from starting 5' end for forward primer and end 3' end for the reverse primer.
+
+Step#5: check for their complimentary. now before choosing the primer their are few things to memorize
+
+1. The sequnce should have atleast 18-25 nucleotides
+2. should have higher GC content approxx 60-70%
+3. both primer should end at G or C
+4. Tm of the rimer should be 45-60c Formula: Tm = 2(count of A + count of T) + 4(count of G + count of C) this formula is for short primers with 14-20 nucleotides  but more accurate for longer primer is Tm​=64.9+A+T+G+C41(G+C−16.4)​/A+T+C+G
+5. No same sequnce shoulf be repeated 4 times continously like (TCCCC)or ATATATA
+
+a

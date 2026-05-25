@@ -1,0 +1,11 @@
+pytest>=7.0
+biopython>=1.83
+numpy>=1.26
+pandas>=2.1
+scipy>=1.11
+reportlab>=4.0
+streamlit>=1.30
+loguru>=0.7
+rich>=13.0
+pydantic>=2.5
+click>=8.1

@@ -1,0 +1,24 @@
+.venv/
+.venv\
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+build/
+dist/
+.eggs/
+*.egg-info/
+.pytest_cache/
+.cache/
+results/
+cache/
+tmp/
+*.log
+.idea/
+.vscode/
+.DS_Store
+
+# system files
+Thumbs.db
