@@ -20,5 +20,9 @@ tmp/
 .vscode/
 .DS_Store
 
+# environment / secrets — never commit these
+.env
+*.env
+
 # system files
 Thumbs.db
