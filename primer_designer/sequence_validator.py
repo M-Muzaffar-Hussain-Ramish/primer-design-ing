@@ -62,6 +62,10 @@ def validate_sequence(raw_input: str, input_format: str = "auto", allow_iupac: b
 
     if len(seq) < 18:
         errors.append("Sequence too short (<18 bp)")
+    elif len(seq) < 50:
+        warnings.append(f"Short sequence ({len(seq)} bp); primer design works best with ≥50 bp")
+    if len(seq) > 500_000:
+        errors.append(f"Sequence too long ({len(seq):,} bp); maximum supported length is 500,000 bp")
 
     composition: Dict[str, int] = {}
     ambiguous: List[Tuple[int, str]] = []

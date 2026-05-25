@@ -32,6 +32,7 @@ def write_blast_cache(cache_dir: Path, sequence: str):
                 "is_accepted": True,
                 "rejection_reason": None,
                 "raw_score": 200.0,
+                "subject_sequence": sequence,
             }
         ],
     }

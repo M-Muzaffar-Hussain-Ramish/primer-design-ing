@@ -4,6 +4,7 @@ from dataclasses import dataclass, asdict
 from typing import List, Optional
 from primer_designer.blast_engine import run_blast, BlastConfig, BlastHit
 
+
 @dataclass
 class SpecificityReport:
     primer_id: str
@@ -18,7 +19,12 @@ class SpecificityReport:
     recommendation: str
 
 
-def _classify_risk(total_hits: int, max_off_target_identity: float, pseudogene: bool, has_on_target: bool) -> str:
+def _classify_risk(
+    total_hits: int,
+    max_off_target_identity: float,
+    pseudogene: bool,
+    has_on_target: bool,
+) -> str:
     if pseudogene:
         return "CRITICAL"
     if max_off_target_identity >= 90.0:
@@ -30,7 +36,12 @@ def _classify_risk(total_hits: int, max_off_target_identity: float, pseudogene: 
     return "LOW"
 
 
-def _score_specificity(total_hits: int, max_off_target_identity: float, pseudogene: bool, has_on_target: bool) -> float:
+def _score_specificity(
+    total_hits: int,
+    max_off_target_identity: float,
+    pseudogene: bool,
+    has_on_target: bool,
+) -> float:
     if pseudogene:
         return 20.0
     penalty = min(total_hits * 10.0, 50.0)
@@ -40,20 +51,45 @@ def _score_specificity(total_hits: int, max_off_target_identity: float, pseudoge
     return max(0.0, min(100.0, score))
 
 
-def run_primer_specificity(primer_seq: str, primer_id: str, cache_dir: str = "cache") -> SpecificityReport:
-    config = BlastConfig(program="blastn", database="nt", identity_threshold=70.0, coverage_threshold=0.0, max_hits=20, e_value_cutoff=1e-3, use_cache=True)
+def run_primer_specificity(
+    primer_seq: str,
+    primer_id: str,
+    cache_dir: str = "cache",
+    cache_only: bool = False,
+) -> SpecificityReport:
+    """Check primer specificity via BLAST.
+
+    Args:
+        primer_seq: Primer nucleotide sequence.
+        primer_id: Identifier for this primer (used in the report).
+        cache_dir: Directory to read/write BLAST cache files.
+        cache_only: When True, raise RuntimeError instead of making network calls.
+
+    Returns:
+        SpecificityReport with risk classification and score.
+    """
+    config = BlastConfig(
+        program="blastn",
+        database="nt",
+        identity_threshold=70.0,
+        coverage_threshold=0.0,
+        max_hits=20,
+        e_value_cutoff=1e-3,
+        use_cache=True,
+        cache_only=cache_only,
+    )
     hits = run_blast(primer_seq, config=config, cache_dir=cache_dir)
 
     on_target: List[BlastHit] = []
     off_target: List[BlastHit] = []
     pseudo: List[BlastHit] = []
-    max_identity = 0.0
-    max_off_target_identity = 0.0
+    max_off_target_identity: float = 0.0
+
     for hit in hits:
-        if hit.identity_percent > max_identity:
-            max_identity = hit.identity_percent
-        if hit.organism and "pseudogene" in hit.organism.lower():
+        is_pseudo = bool(hit.organism and "pseudogene" in hit.organism.lower())
+        if is_pseudo:
             pseudo.append(hit)
+
         if hit.identity_percent >= 95.0 and hit.query_coverage >= 80.0:
             on_target.append(hit)
         else:
@@ -74,7 +110,7 @@ def run_primer_specificity(primer_seq: str, primer_id: str, cache_dir: str = "ca
         off_target_hits=off_target,
         pseudogene_hits=pseudo,
         multi_locus_risk=len(off_target) > 1,
-        max_off_target_identity=max_identity,
+        max_off_target_identity=max_off_target_identity,  # off-target only (was bug: used overall max)
         specificity_score=score,
         risk_level=risk,
         recommendation=recommendation,

@@ -42,22 +42,18 @@ def test_load_from_cache(tmp_path, monkeypatch):
 
 
 def test_no_cache_and_no_biopython(tmp_path, monkeypatch):
-    # if Biopython is not available, run_blast should raise informative error
+    # if Biopython is not available, run_blast should raise informative RuntimeError
     cache_dir = tmp_path / "cache2"
     cache_dir.mkdir()
     query = "ATGC"
     cfg = BlastConfig(use_cache=False)
 
-    # ensure Biopython import fails
     import sys
-    monkeypatch.setitem(sys.modules, 'Bio', None)
-    # Remove Bio if present
-    sys.modules.pop('Bio', None)
+    # Block Bio and its sub-modules by setting sentinels to None.
+    # monkeypatch restores them automatically after the test.
+    for mod in ("Bio", "Bio.Blast", "Bio.Blast.NCBIWWW", "Bio.Blast.NCBIXML"):
+        monkeypatch.setitem(sys.modules, mod, None)
 
-    try:
+    import pytest
+    with pytest.raises(RuntimeError, match="Biopython"):
         run_blast(query, config=cfg, cache_dir=str(cache_dir))
-        raised = False
-    except RuntimeError as e:
-        raised = True
-        assert 'Biopython' in str(e) or 'cached' in str(e)
-    assert raised

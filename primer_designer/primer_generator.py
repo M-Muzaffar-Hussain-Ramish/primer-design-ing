@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from primer_designer.thermodynamics import thermo_profile
 
 
@@ -24,7 +24,7 @@ class PrimerCandidate:
     tm_advanced: float
     gc_clamp: bool
     repeat_detected: bool
-    repeat_sequence: str or None
+    repeat_sequence: Optional[str]
     is_accepted: bool
     rejection_reasons: List[str]
 

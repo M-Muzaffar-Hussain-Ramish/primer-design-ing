@@ -38,7 +38,7 @@ def test_missing_aligner_raises(tmp_path):
             align_sequences(seqs, config=cfg, cache_dir=str(tmp_path))
         except RuntimeError as e:
             raised = True
-            assert 'No global MSA tool' in str(e)
+            assert 'No global MSA' in str(e)
         assert raised
     finally:
         os.environ['PATH'] = old_path
